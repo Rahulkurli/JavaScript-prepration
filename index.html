@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JS Interview Prep</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;700&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0a0a0f; --surface: #111118; --surface2: #1a1a24;
+    --border: #2a2a3a; --accent: #f0c040; --accent2: #40e0c0;
+    --accent3: #e040a0; --text: #e8e8f0; --code-bg: #0d1117;
+  }
+  body { font-family: 'Syne', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+  body::before { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E"); pointer-events:none; z-index:0; opacity:0.4; }
+  .glow-orb { position:fixed; border-radius:50%; filter:blur(80px); opacity:0.07; pointer-events:none; z-index:0; }
+  .orb1 { width:400px; height:400px; background:var(--accent); top:-100px; right:-100px; }
+  .orb2 { width:300px; height:300px; background:var(--accent2); bottom:100px; left:-100px; }
+  .orb3 { width:250px; height:250px; background:var(--accent3); top:50%; left:50%; }
+  header { position:relative; z-index:10; padding:48px 40px 32px; border-bottom:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; gap:24px; flex-wrap:wrap; }
+  .logo { display:flex; flex-direction:column; gap:4px; }
+  .logo-tag { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent2); letter-spacing:3px; text-transform:uppercase; }
+  .logo-title { font-size:32px; font-weight:800; line-height:1; background:linear-gradient(135deg,var(--accent) 0%,var(--accent2) 60%,var(--accent3) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+  .stats-bar { display:flex; gap:24px; align-items:center; }
+  .stat { text-align:center; }
+  .stat-num { font-size:22px; font-weight:800; color:var(--accent); font-family:'JetBrains Mono',monospace; }
+  .stat-label { font-size:11px; color:#606080; letter-spacing:1px; text-transform:uppercase; }
+  .stat-divider { width:1px; height:40px; background:var(--border); }
+  .layout { position:relative; z-index:10; display:grid; grid-template-columns:280px 1fr; min-height:calc(100vh - 120px); }
+  aside { border-right:1px solid var(--border); padding:24px 0; position:sticky; top:0; height:calc(100vh - 120px); overflow-y:auto; scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+  .sidebar-section { margin-bottom:8px; }
+  .sidebar-section-title { font-family:'JetBrains Mono',monospace; font-size:10px; color:#404060; letter-spacing:2px; text-transform:uppercase; padding:8px 24px 6px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:10px 24px; cursor:pointer; transition:all 0.15s; border-left:2px solid transparent; font-size:14px; color:#8080a0; font-weight:600; }
+  .nav-item:hover { color:var(--text); background:rgba(255,255,255,0.03); }
+  .nav-item.active { color:var(--accent); border-left-color:var(--accent); background:rgba(240,192,64,0.05); }
+  .nav-dot { width:6px; height:6px; border-radius:50%; background:currentColor; flex-shrink:0; opacity:0.6; }
+  .nav-badge { margin-left:auto; font-family:'JetBrains Mono',monospace; font-size:10px; background:var(--surface2); border:1px solid var(--border); color:#606080; padding:2px 6px; border-radius:4px; }
+  main { padding:32px 40px; overflow-y:auto; max-height:calc(100vh - 120px); scrollbar-width:thin; scrollbar-color:var(--border) transparent; }
+  .section { display:none; }
+  .section.active { display:block; animation:fadeIn 0.3s ease; }
+  @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  .section-header { margin-bottom:32px; }
+  .section-label { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent2); letter-spacing:3px; margin-bottom:8px; }
+  .section-title { font-size:28px; font-weight:800; color:var(--text); margin-bottom:8px; }
+  .section-desc { font-size:14px; color:#606080; line-height:1.6; max-width:600px; }
+  .qa-list { display:flex; flex-direction:column; gap:12px; }
+  .qa-card { border:1px solid var(--border); border-radius:8px; overflow:hidden; transition:border-color 0.2s; background:var(--surface); }
+  .qa-card:hover { border-color:#3a3a50; }
+  .qa-card.open { border-color:var(--accent); }
+  .qa-question { padding:18px 20px; cursor:pointer; display:flex; align-items:flex-start; gap:14px; user-select:none; }
+  .qa-num { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--accent); min-width:28px; padding-top:2px; opacity:0.7; }
+  .qa-q-text { flex:1; font-size:15px; font-weight:600; color:var(--text); line-height:1.4; }
+  .qa-toggle { width:22px; height:22px; border:1px solid var(--border); border-radius:4px; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:14px; color:#606080; transition:all 0.2s; }
+  .qa-card.open .qa-toggle { background:var(--accent); color:var(--bg); border-color:var(--accent); }
+  .qa-answer { max-height:0; overflow:hidden; transition:max-height 0.35s cubic-bezier(0.4,0,0.2,1); }
+  .qa-card.open .qa-answer { max-height:2000px; }
+  .qa-answer-inner { padding:16px 20px 20px 62px; border-top:1px solid var(--border); }
+  .qa-answer-inner p { font-size:14px; color:#a0a0c0; line-height:1.7; margin-bottom:12px; }
+  .qa-answer-inner p:last-child { margin-bottom:0; }
+  .qa-answer-inner strong { color:var(--accent); font-weight:600; }
+  pre { background:var(--code-bg); border:1px solid var(--border); border-left:3px solid var(--accent2); border-radius:6px; padding:16px; font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.7; overflow-x:auto; margin:12px 0; color:#c0c0e0; scrollbar-width:thin; }
+  .kw{color:#c678dd} .fn{color:#61afef} .str{color:#98c379} .num{color:#d19a66} .cm{color:#5c6370;font-style:italic} .const{color:var(--accent)}
+  .tag { display:inline-block; font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:1px; padding:2px 8px; border-radius:4px; margin-right:6px; margin-bottom:10px; text-transform:uppercase; }
+  .tag-hard{background:rgba(224,64,160,0.15);color:var(--accent3);border:1px solid rgba(224,64,160,0.3)}
+  .tag-med{background:rgba(240,192,64,0.12);color:var(--accent);border:1px solid rgba(240,192,64,0.25)}
+  .tag-easy{background:rgba(64,224,192,0.12);color:var(--accent2);border:1px solid rgba(64,224,192,0.25)}
+  .concept-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:16px; margin-bottom:32px; }
+  .concept-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; transition:all 0.2s; cursor:pointer; }
+  .concept-card:hover { border-color:var(--accent2); transform:translateY(-2px); }
+  .concept-icon { font-size:24px; margin-bottom:10px; }
+  .concept-name { font-size:15px; font-weight:700; color:var(--text); margin-bottom:6px; }
+  .concept-desc { font-size:12px; color:#606080; line-height:1.5; }
+  .quiz-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:28px; margin-bottom:16px; }
+  .quiz-q { font-size:16px; font-weight:600; color:var(--text); margin-bottom:20px; line-height:1.5; }
+  .quiz-options { display:flex; flex-direction:column; gap:10px; }
+  .quiz-opt { padding:12px 16px; background:var(--surface2); border:1px solid var(--border); border-radius:6px; cursor:pointer; font-size:14px; color:#a0a0c0; transition:all 0.15s; font-family:'JetBrains Mono',monospace; }
+  .quiz-opt:hover:not(.disabled){border-color:var(--accent2);color:var(--text)}
+  .quiz-opt.correct{border-color:var(--accent2)!important;background:rgba(64,224,192,0.1);color:var(--accent2)}
+  .quiz-opt.wrong{border-color:var(--accent3)!important;background:rgba(224,64,160,0.1);color:var(--accent3)}
+  .quiz-opt.disabled{cursor:default}
+  .quiz-explain { margin-top:16px; padding:12px 16px; background:rgba(240,192,64,0.07); border:1px solid rgba(240,192,64,0.2); border-radius:6px; font-size:13px; color:#a0a0b8; line-height:1.6; display:none; }
+  .quiz-explain.show{display:block}
+  .quiz-score { display:inline-flex; align-items:center; gap:8px; font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--accent); background:rgba(240,192,64,0.1); border:1px solid rgba(240,192,64,0.2); border-radius:20px; padding:6px 14px; margin-bottom:20px; }
+  .cheat-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(340px,1fr)); gap:16px; }
+  .cheat-card { background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:20px; }
+  .cheat-title { font-size:13px; font-weight:700; color:var(--accent2); letter-spacing:1px; text-transform:uppercase; margin-bottom:12px; font-family:'JetBrains Mono',monospace; }
+  .search-bar { position:relative; margin-bottom:24px; }
+  .search-input { width:100%; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:12px 16px 12px 42px; font-size:14px; color:var(--text); font-family:'JetBrains Mono',monospace; outline:none; transition:border-color 0.2s; }
+  .search-input:focus{border-color:var(--accent2)}
+  .search-icon { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#404060; font-size:16px; }
+  ::-webkit-scrollbar{width:4px;height:4px} ::-webkit-scrollbar-track{background:transparent} ::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+  @media(max-width:768px){.layout{grid-template-columns:1fr}aside{display:none}header{padding:24px 20px}main{padding:20px}.logo-title{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="glow-orb orb1"></div>
+<div class="glow-orb orb2"></div>
+<div class="glow-orb orb3"></div>
+
+<header>
+  <div class="logo">
+    <span class="logo-tag">// interview ready</span>
+    <span class="logo-title">JavaScript Depth</span>
+  </div>
+  <div class="stats-bar">
+    <div class="stat"><div class="stat-num">45</div><div class="stat-label">Questions</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-num" id="score-display">0</div><div class="stat-label">Quiz Score</div></div>
+    <div class="stat-divider"></div>
+    <div class="stat"><div class="stat-num">6</div><div class="stat-label">Topics</div></div>
+  </div>
+</header>
+
+<div class="layout">
+<aside>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Topics</div>
+    <div class="nav-item active" onclick="showSection('overview',this)"><span class="nav-dot"></span> Overview</div>
+    <div class="nav-item" onclick="showSection('core',this)"><span class="nav-dot"></span> Core Concepts <span class="nav-badge">8</span></div>
+    <div class="nav-item" onclick="showSection('async',this)"><span class="nav-dot"></span> Async &amp; Promises <span class="nav-badge">4</span></div>
+    <div class="nav-item" onclick="showSection('closures',this)"><span class="nav-dot"></span> Closures &amp; Scope <span class="nav-badge">3</span></div>
+    <div class="nav-item" onclick="showSection('prototypes',this)"><span class="nav-dot"></span> Prototypes &amp; OOP <span class="nav-badge">3</span></div>
+    <div class="nav-item" onclick="showSection('advanced',this)"><span class="nav-dot"></span> Advanced Topics <span class="nav-badge">5</span></div>
+  </div>
+  <div class="sidebar-section">
+    <div class="sidebar-section-title">Practice</div>
+    <div class="nav-item" onclick="showSection('quiz',this)"><span class="nav-dot"></span> Quiz Mode</div>
+    <div class="nav-item" onclick="showSection('cheatsheet',this)"><span class="nav-dot"></span> Cheat Sheet</div>
+  </div>
+</aside>
+
+<main>
+
+<!-- OVERVIEW -->
+<div id="overview" class="section active">
+  <div class="section-header">
+    <div class="section-label">// start here</div>
+    <div class="section-title">JavaScript Interview Guide</div>
+    <div class="section-desc">A comprehensive, in-depth preparation resource covering everything from closures to event loops. Built for senior-level interviews.</div>
+  </div>
+  <div class="concept-grid">
+    <div class="concept-card" onclick="showSection('core',document.querySelector('[onclick*=core]'))"><div class="concept-icon">⚡</div><div class="concept-name">Core Concepts</div><div class="concept-desc">Types, coercion, hoisting, event loop, call stack, execution context</div></div>
+    <div class="concept-card" onclick="showSection('async',document.querySelector('[onclick*=async]'))"><div class="concept-icon">🔄</div><div class="concept-name">Async &amp; Promises</div><div class="concept-desc">Callbacks, Promises, async/await, microtasks, race conditions</div></div>
+    <div class="concept-card" onclick="showSection('closures',document.querySelector('[onclick*=closures]'))"><div class="concept-icon">🔒</div><div class="concept-name">Closures &amp; Scope</div><div class="concept-desc">Lexical scoping, closure patterns, module pattern, currying</div></div>
+    <div class="concept-card" onclick="showSection('prototypes',document.querySelector('[onclick*=prototypes]'))"><div class="concept-icon">🧬</div><div class="concept-name">Prototypes &amp; OOP</div><div class="concept-desc">Prototype chain, inheritance, classes, implementing new</div></div>
+    <div class="concept-card" onclick="showSection('advanced',document.querySelector('[onclick*=advanced]'))"><div class="concept-icon">🚀</div><div class="concept-name">Advanced Topics</div><div class="concept-desc">Generators, Proxy, WeakMap, debounce, memory leaks</div></div>
+    <div class="concept-card" onclick="showSection('quiz',document.querySelector('[onclick*=quiz]'))"><div class="concept-icon">🎯</div><div class="concept-name">Quiz Mode</div><div class="concept-desc">Test your knowledge with tricky output-prediction questions</div></div>
+  </div>
+  <div class="section-label" style="margin-bottom:12px">// pro tips</div>
+  <div class="qa-list">
+    <div class="qa-card open" id="tip1">
+      <div class="qa-question" onclick="toggleCard('tip1')"><span class="qa-num">TIP</span><span class="qa-q-text">How to approach JavaScript questions in a senior-level interview</span><span class="qa-toggle">−</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <p><strong>Always think aloud.</strong> Interviewers care about your reasoning process. Walk them through your mental model before writing code.</p>
+        <p><strong>Cover edge cases</strong>: null, undefined, unexpected types, async failures, circular references, empty inputs.</p>
+        <p><strong>Mention trade-offs</strong>: When choosing between approaches, explain what you gain and sacrifice — memory vs speed, readability vs cleverness, flexibility vs simplicity.</p>
+        <p><strong>Know the "why"</strong>: Don't just know that typeof null === 'object'. Know it's a historical bug in V8's type tag system.</p>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<!-- CORE CONCEPTS -->
+<div id="core" class="section">
+  <div class="section-header">
+    <div class="section-label">// topic 01</div>
+    <div class="section-title">Core Concepts</div>
+    <div class="section-desc">The fundamentals interviewers probe to test genuine understanding vs surface knowledge.</div>
+  </div>
+  <div class="search-bar"><span class="search-icon">🔍</span><input class="search-input" placeholder="Filter questions..." oninput="filterCards(this,'core-list')"></div>
+  <div class="qa-list" id="core-list">
+
+    <div class="qa-card" id="c1">
+      <div class="qa-question" onclick="toggleCard('c1')"><span class="qa-num">01</span><span class="qa-q-text">Explain the JavaScript Event Loop in detail. How does it handle the call stack, Web APIs, and task queues?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>JavaScript is <strong>single-threaded</strong> — it has one call stack. The event loop constantly checks: "Is the call stack empty? If so, take the next task from the queue."</p>
+        <p>1. Synchronous code runs on the <strong>Call Stack</strong>.<br>2. Async operations (setTimeout, fetch) are handed to <strong>Web APIs</strong> (browser) or <strong>libuv</strong> (Node.js).<br>3. When complete, callbacks go to the <strong>Task Queue</strong> (macrotasks) or <strong>Microtask Queue</strong> (Promises).<br>4. The Event Loop drains the <strong>Microtask Queue completely</strong> after each task before picking the next macrotask.</p>
+        <pre><span class="cm">// What's the output order?</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'1'</span>);
+<span class="fn">setTimeout</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'2'</span>), <span class="num">0</span>);
+<span class="kw">Promise</span>.<span class="fn">resolve</span>().<span class="fn">then</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'3'</span>));
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'4'</span>);
+<span class="cm">// Output: 1, 4, 3, 2
+// Sync first → Microtasks → Macrotasks</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="c2">
+      <div class="qa-question" onclick="toggleCard('c2')"><span class="qa-num">02</span><span class="qa-q-text">What is hoisting? How does it differ between var, let, const, and function declarations?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-med">Medium</span>
+        <p>Hoisting moves <strong>declarations</strong> to the top of their scope during compilation. Only declarations hoist — not initializations.</p>
+        <p><strong>var</strong>: Hoisted to function scope, initialized as undefined. <strong>let/const</strong>: Hoisted to block scope but stay in the <strong>Temporal Dead Zone (TDZ)</strong> — accessing them throws ReferenceError. <strong>function declarations</strong>: Fully hoisted (name + body).</p>
+        <pre><span class="fn">console</span>.<span class="fn">log</span>(x); <span class="cm">// undefined (var hoisted)</span>
+<span class="kw">var</span> <span class="const">x</span> = <span class="num">5</span>;
+
+<span class="fn">console</span>.<span class="fn">log</span>(y); <span class="cm">// ReferenceError: TDZ</span>
+<span class="kw">let</span> <span class="const">y</span> = <span class="num">5</span>;
+
+<span class="fn">greet</span>(); <span class="cm">// Works — function fully hoisted</span>
+<span class="kw">function</span> <span class="fn">greet</span>() { <span class="kw">return</span> <span class="str">'hi'</span>; }
+
+<span class="fn">sayBye</span>(); <span class="cm">// TypeError — arrow fn not hoisted</span>
+<span class="kw">const</span> <span class="fn">sayBye</span> = () => <span class="str">'bye'</span>;</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="c3">
+      <div class="qa-question" onclick="toggleCard('c3')"><span class="qa-num">03</span><span class="qa-q-text">Explain type coercion. What's the difference between == and ===? Give tricky examples.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p><strong>Type coercion</strong> is JavaScript's implicit conversion between types. <code>===</code> (strict) never coerces. <code>==</code> (loose) follows the Abstract Equality Comparison algorithm.</p>
+        <pre><span class="fn">console</span>.<span class="fn">log</span>(<span class="num">0</span> == <span class="str">''</span>)           <span class="cm">// true</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="num">0</span> == <span class="kw">false</span>)        <span class="cm">// true</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">null</span> == <span class="kw">undefined</span>) <span class="cm">// true</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">null</span> == <span class="num">0</span>)         <span class="cm">// false !</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">NaN</span> == <span class="kw">NaN</span>)        <span class="cm">// false (NaN !== NaN)</span>
+<span class="fn">console</span>.<span class="fn">log</span>([] + [])           <span class="cm">// ""</span>
+<span class="fn">console</span>.<span class="fn">log</span>([] + {})           <span class="cm">// "[object Object]"</span>
+<span class="fn">console</span>.<span class="fn">log</span>([] == ![])         <span class="cm">// true (!</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="c4">
+      <div class="qa-question" onclick="toggleCard('c4')"><span class="qa-num">04</span><span class="qa-q-text">What is the difference between null, undefined, and undeclared?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-easy">Easy</span>
+        <p><strong>undefined</strong>: Declared but not assigned. Default for uninitialized vars, missing params, missing object keys.</p>
+        <p><strong>null</strong>: Intentional absence of value, explicitly assigned. <code>typeof null === 'object'</code> is a famous JS bug.</p>
+        <p><strong>undeclared</strong>: Never declared in any accessible scope. Accessing throws ReferenceError (except via typeof).</p>
+        <pre><span class="kw">let</span> <span class="const">a</span>;
+<span class="fn">console</span>.<span class="fn">log</span>(a);          <span class="cm">// undefined</span>
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">typeof</span> a);   <span class="cm">// "undefined"</span>
+
+<span class="kw">let</span> <span class="const">b</span> = <span class="kw">null</span>;
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">typeof</span> b);   <span class="cm">// "object" (the bug)</span>
+<span class="fn">console</span>.<span class="fn">log</span>(b === <span class="kw">null</span>); <span class="cm">// true (correct check)</span>
+
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">typeof</span> z);   <span class="cm">// "undefined" (safe)</span>
+<span class="fn">console</span>.<span class="fn">log</span>(z);          <span class="cm">// ReferenceError!</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="c5">
+      <div class="qa-question" onclick="toggleCard('c5')"><span class="qa-num">05</span><span class="qa-q-text">How does 'this' work? How does it differ in arrow functions vs regular functions?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>In <strong>regular functions</strong>, <code>this</code> is determined by <em>how the function is called</em> (dynamic binding). In <strong>arrow functions</strong>, <code>this</code> is lexically bound — it inherits from the enclosing scope at definition time and cannot be overridden.</p>
+        <pre><span class="kw">const</span> <span class="const">obj</span> = {
+  name: <span class="str">'JS'</span>,
+  regular() { <span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">this</span>.name); },  <span class="cm">// 'JS'</span>
+  arrow: () => { <span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">this</span>.name); }, <span class="cm">// undefined</span>
+  delayed() {
+    <span class="fn">setTimeout</span>(<span class="kw">function</span>() {
+      <span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">this</span>.name); <span class="cm">// undefined (lost context)</span>
+    }, <span class="num">100</span>);
+    <span class="fn">setTimeout</span>(() => {
+      <span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">this</span>.name); <span class="cm">// 'JS' (arrow inherits)</span>
+    }, <span class="num">100</span>);
+  }
+};</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="c6">
+      <div class="qa-question" onclick="toggleCard('c6')"><span class="qa-num">06</span><span class="qa-q-text">Explain call(), apply(), and bind(). When would you use each?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-med">Medium</span>
+        <p>All three explicitly set <code>this</code>. <strong>call(ctx, a, b)</strong> invokes immediately, individual args. <strong>apply(ctx, [a,b])</strong> invokes immediately, array of args. <strong>bind(ctx, a)</strong> returns a new permanently-bound function — great for partial application and callbacks.</p>
+        <pre><span class="kw">function</span> <span class="fn">greet</span>(greeting, punct) {
+  <span class="kw">return</span> <span class="str">`${greeting}, ${<span class="kw">this</span>.name}${punct}`</span>;
+}
+<span class="kw">const</span> <span class="const">user</span> = { name: <span class="str">'Alice'</span> };
+
+<span class="fn">greet</span>.<span class="fn">call</span>(user, <span class="str">'Hello'</span>, <span class="str">'!'</span>);    <span class="cm">// "Hello, Alice!"</span>
+<span class="fn">greet</span>.<span class="fn">apply</span>(user, [<span class="str">'Hi'</span>, <span class="str">'?'</span>]);   <span class="cm">// "Hi, Alice?"</span>
+<span class="kw">const</span> <span class="const">bound</span> = <span class="fn">greet</span>.<span class="fn">bind</span>(user, <span class="str">'Hey'</span>);
+<span class="fn">bound</span>(<span class="str">'.'</span>);                         <span class="cm">// "Hey, Alice."</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="c7">
+      <div class="qa-question" onclick="toggleCard('c7')"><span class="qa-num">07</span><span class="qa-q-text">What are JS data types? Explain pass-by-value vs pass-by-reference.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-med">Medium</span>
+        <p><strong>Primitives</strong> (by value): string, number, bigint, boolean, undefined, null, symbol. Immutable and copied on assignment.</p>
+        <p><strong>Objects</strong> (by reference): Objects, Arrays, Functions. Variables hold a memory address — mutations affect all references.</p>
+        <pre><span class="kw">let</span> <span class="const">a</span> = <span class="num">5</span>, b = a; b = <span class="num">10</span>;
+<span class="fn">console</span>.<span class="fn">log</span>(a); <span class="cm">// 5 (unchanged)</span>
+
+<span class="kw">const</span> <span class="const">arr1</span> = [<span class="num">1</span>,<span class="num">2</span>,<span class="num">3</span>];
+<span class="kw">const</span> <span class="const">arr2</span> = arr1;
+arr2.<span class="fn">push</span>(<span class="num">4</span>);
+<span class="fn">console</span>.<span class="fn">log</span>(arr1); <span class="cm">// [1,2,3,4] (mutated!)</span>
+
+<span class="cm">// Safe copies</span>
+<span class="kw">const</span> <span class="const">shallow</span> = [...arr1];
+<span class="kw">const</span> <span class="const">deep</span> = <span class="fn">structuredClone</span>(arr1);</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="c8">
+      <div class="qa-question" onclick="toggleCard('c8')"><span class="qa-num">08</span><span class="qa-q-text">What is the difference between deep copy and shallow copy? How do you deep clone?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-med">Medium</span>
+        <p>A <strong>shallow copy</strong> copies top-level properties — nested objects still share references. A <strong>deep copy</strong> recursively copies all levels.</p>
+        <pre><span class="kw">const</span> <span class="const">orig</span> = { a: <span class="num">1</span>, b: { c: <span class="num">2</span> } };
+<span class="kw">const</span> <span class="const">s</span> = { ...orig };
+s.b.c = <span class="num">99</span>;
+<span class="fn">console</span>.<span class="fn">log</span>(orig.b.c); <span class="cm">// 99! (shared ref)</span>
+
+<span class="cm">// Option 1: structuredClone (modern, recommended)</span>
+<span class="kw">const</span> <span class="const">d1</span> = <span class="fn">structuredClone</span>(orig);
+
+<span class="cm">// Option 2: JSON (loses functions/dates/undefined)</span>
+<span class="kw">const</span> <span class="const">d2</span> = <span class="kw">JSON</span>.<span class="fn">parse</span>(<span class="kw">JSON</span>.<span class="fn">stringify</span>(orig));
+
+<span class="cm">// Option 3: recursive (handles edge cases)</span>
+<span class="kw">function</span> <span class="fn">deepClone</span>(obj) {
+  <span class="kw">if</span> (obj === <span class="kw">null</span> || <span class="kw">typeof</span> obj !== <span class="str">'object'</span>) <span class="kw">return</span> obj;
+  <span class="kw">if</span> (<span class="kw">Array</span>.<span class="fn">isArray</span>(obj)) <span class="kw">return</span> obj.<span class="fn">map</span>(<span class="fn">deepClone</span>);
+  <span class="kw">return</span> <span class="kw">Object</span>.<span class="fn">fromEntries</span>(
+    <span class="kw">Object</span>.<span class="fn">entries</span>(obj).<span class="fn">map</span>(([k,v]) => [k, <span class="fn">deepClone</span>(v)])
+  );
+}</pre>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ASYNC -->
+<div id="async" class="section">
+  <div class="section-header">
+    <div class="section-label">// topic 02</div>
+    <div class="section-title">Async &amp; Promises</div>
+    <div class="section-desc">The most commonly asked and most commonly misunderstood part of JavaScript.</div>
+  </div>
+  <div class="qa-list">
+
+    <div class="qa-card" id="a1">
+      <div class="qa-question" onclick="toggleCard('a1')"><span class="qa-num">01</span><span class="qa-q-text">What is a Promise? Explain the three states and Promise chaining.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-med">Medium</span>
+        <p>A Promise represents eventual completion or failure of an async operation. States: <strong>pending</strong> → <strong>fulfilled</strong> or <strong>rejected</strong>. Settled states are final.</p>
+        <pre><span class="kw">const</span> <span class="const">p</span> = <span class="kw">new</span> <span class="fn">Promise</span>((resolve, reject) => {
+  <span class="fn">setTimeout</span>(() => <span class="fn">resolve</span>(<span class="str">'data'</span>), <span class="num">1000</span>);
+});
+
+p.<span class="fn">then</span>(data => {
+  <span class="fn">console</span>.<span class="fn">log</span>(data);    <span class="cm">// 'data'</span>
+  <span class="kw">return</span> data + <span class="str">'!'</span>;   <span class="cm">// chain returns new Promise</span>
+}).<span class="fn">then</span>(val => <span class="fn">console</span>.<span class="fn">log</span>(val)) <span class="cm">// 'data!'</span>
+  .<span class="fn">catch</span>(err => <span class="fn">console</span>.<span class="fn">error</span>(err))
+  .<span class="fn">finally</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'done'</span>));</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="a2">
+      <div class="qa-question" onclick="toggleCard('a2')"><span class="qa-num">02</span><span class="qa-q-text">Compare Promise.all, Promise.allSettled, Promise.race, and Promise.any.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p><strong>Promise.all</strong>: All must fulfill. Rejects fast on first rejection. <strong>Promise.allSettled</strong>: Waits for all, never rejects, returns status objects. <strong>Promise.race</strong>: First to settle (resolve or reject) wins. <strong>Promise.any</strong>: First to fulfill wins; only rejects if all reject (AggregateError).</p>
+        <pre><span class="kw">const</span> <span class="const">p1</span> = <span class="kw">Promise</span>.<span class="fn">resolve</span>(<span class="num">1</span>);
+<span class="kw">const</span> <span class="const">p2</span> = <span class="kw">Promise</span>.<span class="fn">reject</span>(<span class="str">'err'</span>);
+<span class="kw">const</span> <span class="const">p3</span> = <span class="kw">Promise</span>.<span class="fn">resolve</span>(<span class="num">3</span>);
+
+<span class="kw">await</span> <span class="kw">Promise</span>.<span class="fn">all</span>([p1,p2,p3]);        <span class="cm">// throws 'err'</span>
+<span class="kw">await</span> <span class="kw">Promise</span>.<span class="fn">allSettled</span>([p1,p2,p3]); <span class="cm">// [{ok,1},{err},{ok,3}]</span>
+<span class="kw">await</span> <span class="kw">Promise</span>.<span class="fn">race</span>([p1,p2,p3]);       <span class="cm">// 1</span>
+<span class="kw">await</span> <span class="kw">Promise</span>.<span class="fn">any</span>([p2,p1,p3]);        <span class="cm">// 1 (first fulfilled)</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="a3">
+      <div class="qa-question" onclick="toggleCard('a3')"><span class="qa-num">03</span><span class="qa-q-text">Explain async/await. Common pitfalls and error handling patterns.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-med">Medium</span>
+        <p>async/await is syntactic sugar over Promises. An async function always returns a Promise. await pauses until the Promise settles.</p>
+        <pre><span class="kw">async function</span> <span class="fn">fetchUser</span>(id) {
+  <span class="kw">try</span> {
+    <span class="kw">const</span> <span class="const">res</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">`/api/user/${id}`</span>);
+    <span class="kw">if</span> (!res.ok) <span class="kw">throw new</span> <span class="fn">Error</span>(<span class="str">`HTTP ${res.status}`</span>);
+    <span class="kw">return await</span> res.<span class="fn">json</span>();
+  } <span class="kw">catch</span>(err) {
+    <span class="fn">console</span>.<span class="fn">error</span>(err); <span class="kw">throw</span> err;
+  }
+}
+
+<span class="cm">// Pitfall: sequential vs parallel</span>
+<span class="cm">// SLOW: awaiting sequentially</span>
+<span class="kw">const</span> <span class="const">a</span> = <span class="kw">await</span> <span class="fn">fetchA</span>();
+<span class="kw">const</span> <span class="const">b</span> = <span class="kw">await</span> <span class="fn">fetchB</span>();
+
+<span class="cm">// FAST: run in parallel</span>
+<span class="kw">const</span> [a, b] = <span class="kw">await</span> <span class="kw">Promise</span>.<span class="fn">all</span>([<span class="fn">fetchA</span>(), <span class="fn">fetchB</span>()]);</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="a4">
+      <div class="qa-question" onclick="toggleCard('a4')"><span class="qa-num">04</span><span class="qa-q-text">What are microtasks vs macrotasks? Name examples of each.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p><strong>Macrotasks</strong>: setTimeout, setInterval, I/O callbacks, UI rendering. Run one per event loop iteration.<br><strong>Microtasks</strong>: Promise callbacks, queueMicrotask, MutationObserver. The entire microtask queue drains after every macrotask — they can starve the event loop!</p>
+        <pre><span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'start'</span>);
+<span class="fn">setTimeout</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'macro'</span>), <span class="num">0</span>);
+<span class="kw">Promise</span>.<span class="fn">resolve</span>()
+  .<span class="fn">then</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'micro 1'</span>))
+  .<span class="fn">then</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'micro 2'</span>));
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'end'</span>);
+<span class="cm">// start → end → micro 1 → micro 2 → macro</span></pre>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- CLOSURES -->
+<div id="closures" class="section">
+  <div class="section-header">
+    <div class="section-label">// topic 03</div>
+    <div class="section-title">Closures &amp; Scope</div>
+    <div class="section-desc">Deep understanding of closures separates intermediate from senior engineers.</div>
+  </div>
+  <div class="qa-list">
+
+    <div class="qa-card" id="cl1">
+      <div class="qa-question" onclick="toggleCard('cl1')"><span class="qa-num">01</span><span class="qa-q-text">What is a closure? Why is it useful? Give real-world examples.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>A closure is a function that <strong>remembers variables from its outer scope even after that scope has returned</strong>. Functions in JS maintain a reference to their lexical environment.</p>
+        <pre><span class="cm">// Counter factory (private state)</span>
+<span class="kw">function</span> <span class="fn">makeCounter</span>(start = <span class="num">0</span>) {
+  <span class="kw">let</span> <span class="const">count</span> = start;
+  <span class="kw">return</span> {
+    <span class="fn">increment</span>: () => ++count,
+    <span class="fn">decrement</span>: () => --count,
+    <span class="fn">value</span>: () => count
+  };
+}
+<span class="kw">const</span> <span class="const">c</span> = <span class="fn">makeCounter</span>(<span class="num">10</span>);
+c.<span class="fn">increment</span>(); <span class="cm">// 11 — count inaccessible from outside</span>
+
+<span class="cm">// Memoization via closure</span>
+<span class="kw">function</span> <span class="fn">memoize</span>(fn) {
+  <span class="kw">const</span> <span class="const">cache</span> = <span class="kw">new</span> <span class="fn">Map</span>();
+  <span class="kw">return</span> (...args) => {
+    <span class="kw">const</span> <span class="const">key</span> = <span class="kw">JSON</span>.<span class="fn">stringify</span>(args);
+    <span class="kw">if</span> (!cache.<span class="fn">has</span>(key)) cache.<span class="fn">set</span>(key, <span class="fn">fn</span>(...args));
+    <span class="kw">return</span> cache.<span class="fn">get</span>(key);
+  };
+}</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="cl2">
+      <div class="qa-question" onclick="toggleCard('cl2')"><span class="qa-num">02</span><span class="qa-q-text">The classic loop-closure bug: explain what goes wrong and 3 ways to fix it.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>With <code>var</code>, all closures in a loop share the <strong>same variable</strong>. By the time callbacks execute, <code>i</code> is the final loop value.</p>
+        <pre><span class="cm">// Bug with var</span>
+<span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++)
+  <span class="fn">setTimeout</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(i), <span class="num">100</span>);
+<span class="cm">// Prints: 3, 3, 3</span>
+
+<span class="cm">// Fix 1: let (block scoped per iteration)</span>
+<span class="kw">for</span> (<span class="kw">let</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++)
+  <span class="fn">setTimeout</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(i), <span class="num">100</span>);
+<span class="cm">// Prints: 0, 1, 2</span>
+
+<span class="cm">// Fix 2: IIFE to capture value</span>
+<span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++)
+  ((j) => <span class="fn">setTimeout</span>(() => <span class="fn">console</span>.<span class="fn">log</span>(j), <span class="num">100</span>))(i);
+
+<span class="cm">// Fix 3: bind</span>
+<span class="kw">for</span> (<span class="kw">var</span> i = <span class="num">0</span>; i &lt; <span class="num">3</span>; i++)
+  <span class="fn">setTimeout</span>(<span class="fn">console</span>.<span class="fn">log</span>.<span class="fn">bind</span>(<span class="kw">null</span>, i), <span class="num">100</span>);</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="cl3">
+      <div class="qa-question" onclick="toggleCard('cl3')"><span class="qa-num">03</span><span class="qa-q-text">What is currying? Implement a curry function from scratch.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>Currying transforms f(a,b,c) into f(a)(b)(c). Each partial call returns a new function that remembers previous arguments via closure, until all args are provided.</p>
+        <pre><span class="kw">function</span> <span class="fn">curry</span>(fn) {
+  <span class="kw">return function</span> <span class="fn">curried</span>(...args) {
+    <span class="kw">if</span> (args.length >= fn.length) {
+      <span class="kw">return</span> fn.<span class="fn">apply</span>(<span class="kw">this</span>, args);
+    }
+    <span class="kw">return</span> (...args2) => <span class="fn">curried</span>(...args, ...args2);
+  };
+}
+
+<span class="kw">const</span> <span class="fn">add</span> = <span class="fn">curry</span>((a, b, c) => a + b + c);
+<span class="fn">add</span>(<span class="num">1</span>)(<span class="num">2</span>)(<span class="num">3</span>);   <span class="cm">// 6</span>
+<span class="fn">add</span>(<span class="num">1</span>, <span class="num">2</span>)(<span class="num">3</span>); <span class="cm">// 6</span>
+<span class="fn">add</span>(<span class="num">1</span>)(<span class="num">2</span>, <span class="num">3</span>); <span class="cm">// 6</span>
+
+<span class="cm">// Real use: reusable factories</span>
+<span class="kw">const</span> <span class="fn">multiply</span> = <span class="fn">curry</span>((a, b) => a * b);
+<span class="kw">const</span> <span class="fn">double</span> = <span class="fn">multiply</span>(<span class="num">2</span>); <span class="cm">// partial application</span>
+<span class="fn">double</span>(<span class="num">5</span>); <span class="cm">// 10</span></pre>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- PROTOTYPES -->
+<div id="prototypes" class="section">
+  <div class="section-header">
+    <div class="section-label">// topic 04</div>
+    <div class="section-title">Prototypes &amp; OOP</div>
+    <div class="section-desc">JavaScript's prototype-based inheritance model — often asked but poorly understood.</div>
+  </div>
+  <div class="qa-list">
+
+    <div class="qa-card" id="p1">
+      <div class="qa-question" onclick="toggleCard('p1')"><span class="qa-num">01</span><span class="qa-q-text">Explain the prototype chain. How does property lookup work?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>Every object has an internal [[Prototype]] link. Property access walks the chain: object → its prototype → ... → null. First match wins.</p>
+        <pre><span class="kw">const</span> <span class="const">animal</span> = { breathes: <span class="kw">true</span> };
+<span class="kw">const</span> <span class="const">dog</span> = <span class="kw">Object</span>.<span class="fn">create</span>(animal);
+dog.barks = <span class="kw">true</span>;
+
+dog.barks;    <span class="cm">// true (own property)</span>
+dog.breathes; <span class="cm">// true (from animal prototype)</span>
+dog.flies;    <span class="cm">// undefined (end of chain)</span>
+
+<span class="cm">// Chain: dog → animal → Object.prototype → null</span>
+
+dog.<span class="fn">hasOwnProperty</span>(<span class="str">'barks'</span>);    <span class="cm">// true</span>
+dog.<span class="fn">hasOwnProperty</span>(<span class="str">'breathes'</span>); <span class="cm">// false</span>
+<span class="str">'breathes'</span> <span class="kw">in</span> dog;              <span class="cm">// true (checks chain)</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="p2">
+      <div class="qa-question" onclick="toggleCard('p2')"><span class="qa-num">02</span><span class="qa-q-text">Implement your own 'new' keyword. What does it actually do under the hood?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>The <code>new</code> keyword: (1) creates a new object, (2) sets its [[Prototype]] to constructor.prototype, (3) calls constructor with this = new object, (4) returns the object (or whatever object the constructor returns).</p>
+        <pre><span class="kw">function</span> <span class="fn">myNew</span>(Constructor, ...args) {
+  <span class="cm">// 1. Create with correct prototype</span>
+  <span class="kw">const</span> <span class="const">obj</span> = <span class="kw">Object</span>.<span class="fn">create</span>(Constructor.prototype);
+  <span class="cm">// 2. Call constructor with obj as this</span>
+  <span class="kw">const</span> <span class="const">result</span> = Constructor.<span class="fn">apply</span>(obj, args);
+  <span class="cm">// 3. Return result if object, else obj</span>
+  <span class="kw">return</span> (result && <span class="kw">typeof</span> result === <span class="str">'object'</span>) ? result : obj;
+}
+
+<span class="kw">function</span> <span class="fn">Person</span>(name) { <span class="kw">this</span>.name = name; }
+Person.prototype.<span class="fn">greet</span> = <span class="kw">function</span>() { <span class="kw">return</span> <span class="str">`Hi, ${<span class="kw">this</span>.name}`</span>; };
+
+<span class="kw">const</span> <span class="const">p</span> = <span class="fn">myNew</span>(Person, <span class="str">'Alice'</span>);
+p.<span class="fn">greet</span>(); <span class="cm">// "Hi, Alice"</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="p3">
+      <div class="qa-question" onclick="toggleCard('p3')"><span class="qa-num">03</span><span class="qa-q-text">ES6 Classes vs prototypal inheritance — what are the actual differences?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-med">Medium</span>
+        <p>ES6 classes are <strong>syntactic sugar</strong> over prototypes — same mechanism underneath. Key differences: must use new, run in strict mode, not hoisted (TDZ), methods are non-enumerable by default, must call super() before using this in subclass constructor.</p>
+        <pre><span class="cm">// ES6 Class</span>
+<span class="kw">class</span> <span class="fn">Animal</span> {
+  <span class="fn">constructor</span>(name) { <span class="kw">this</span>.name = name; }
+  <span class="fn">speak</span>() { <span class="kw">return</span> <span class="str">`${<span class="kw">this</span>.name} makes a sound`</span>; }
+}
+<span class="kw">class</span> <span class="fn">Dog</span> <span class="kw">extends</span> <span class="fn">Animal</span> {
+  <span class="fn">speak</span>() { <span class="kw">return</span> <span class="str">`${<span class="kw">this</span>.name} barks`</span>; }
+}
+
+<span class="cm">// Equivalent (manual prototype)</span>
+<span class="kw">function</span> <span class="fn">Animal</span>(n) { <span class="kw">this</span>.name = n; }
+Animal.prototype.<span class="fn">speak</span> = <span class="kw">function</span>() { ... };
+<span class="kw">function</span> <span class="fn">Dog</span>(n) { Animal.<span class="fn">call</span>(<span class="kw">this</span>, n); }
+Dog.prototype = <span class="kw">Object</span>.<span class="fn">create</span>(Animal.prototype);
+Dog.prototype.constructor = Dog;</pre>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ADVANCED -->
+<div id="advanced" class="section">
+  <div class="section-header">
+    <div class="section-label">// topic 05</div>
+    <div class="section-title">Advanced Topics</div>
+    <div class="section-desc">Questions that signal you've gone beyond tutorials and worked in production.</div>
+  </div>
+  <div class="qa-list">
+
+    <div class="qa-card" id="adv1">
+      <div class="qa-question" onclick="toggleCard('adv1')"><span class="qa-num">01</span><span class="qa-q-text">What are generators? How do they enable lazy evaluation?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>Generators are functions that can pause and resume using yield. They return an iterator. Perfect for infinite sequences, streaming data, and custom iterables.</p>
+        <pre><span class="kw">function</span>* <span class="fn">fibonacci</span>() {
+  <span class="kw">let</span> [a, b] = [<span class="num">0</span>, <span class="num">1</span>];
+  <span class="kw">while</span> (<span class="kw">true</span>) {
+    <span class="kw">yield</span> a;
+    [a, b] = [b, a + b];
+  }
+}
+<span class="kw">const</span> <span class="const">fib</span> = <span class="fn">fibonacci</span>();
+[...<span class="kw">Array</span>(<span class="num">8</span>)].<span class="fn">map</span>(() => fib.<span class="fn">next</span>().value);
+<span class="cm">// [0,1,1,2,3,5,8,13] — computed lazily, no array needed</span>
+
+<span class="cm">// Two-way communication</span>
+<span class="kw">function</span>* <span class="fn">calc</span>() {
+  <span class="kw">const</span> <span class="const">x</span> = <span class="kw">yield</span> <span class="str">'Enter a number'</span>;
+  <span class="kw">const</span> <span class="const">y</span> = <span class="kw">yield</span> <span class="str">'Enter another'</span>;
+  <span class="kw">return</span> x + y;
+}
+<span class="kw">const</span> <span class="const">g</span> = <span class="fn">calc</span>();
+g.<span class="fn">next</span>();       <span class="cm">// {value: 'Enter a number', done: false}</span>
+g.<span class="fn">next</span>(<span class="num">10</span>);    <span class="cm">// {value: 'Enter another', done: false}</span>
+g.<span class="fn">next</span>(<span class="num">20</span>);    <span class="cm">// {value: 30, done: true}</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="adv2">
+      <div class="qa-question" onclick="toggleCard('adv2')"><span class="qa-num">02</span><span class="qa-q-text">Explain JavaScript's Proxy object. What can you build with it?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>Proxy wraps an object and intercepts fundamental operations via traps. Powers Vue 3's reactivity system, validation libraries, and mock objects.</p>
+        <pre><span class="cm">// Validation proxy</span>
+<span class="kw">const</span> <span class="fn">validate</span> = (target, rules) => <span class="kw">new</span> <span class="fn">Proxy</span>(target, {
+  <span class="fn">set</span>(obj, prop, value) {
+    <span class="kw">if</span> (rules[prop] && !rules[prop](value))
+      <span class="kw">throw new</span> <span class="fn">TypeError</span>(<span class="str">`Invalid: ${prop} = ${value}`</span>);
+    obj[prop] = value;
+    <span class="kw">return true</span>;
+  }
+});
+
+<span class="kw">const</span> <span class="const">user</span> = <span class="fn">validate</span>({}, {
+  age: v => <span class="kw">typeof</span> v === <span class="str">'number'</span> && v > <span class="num">0</span> && v &lt; <span class="num">150</span>
+});
+user.age = <span class="num">25</span>;     <span class="cm">// OK</span>
+user.age = <span class="str">'old'</span>;  <span class="cm">// TypeError!
+
+// Reactive data (Vue 3 core idea)
+const reactive = obj => new Proxy(obj, {
+  set(t, p, v) { t[p]=v; render(); return true; }
+});</span></pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="adv3">
+      <div class="qa-question" onclick="toggleCard('adv3')"><span class="qa-num">03</span><span class="qa-q-text">What are WeakMap and WeakSet? When do you use them?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>WeakMap/WeakSet hold weak references — if no other reference exists, GC can collect the object (preventing memory leaks). Keys must be objects, non-iterable, no .size.</p>
+        <pre><span class="cm">// Private instance data (no class private fields)</span>
+<span class="kw">const</span> <span class="const">_priv</span> = <span class="kw">new</span> <span class="fn">WeakMap</span>();
+<span class="kw">class</span> <span class="fn">Secure</span> {
+  <span class="fn">constructor</span>(secret) { _priv.<span class="fn">set</span>(<span class="kw">this</span>, { secret }); }
+  <span class="fn">verify</span>(s) { <span class="kw">return</span> _priv.<span class="fn">get</span>(<span class="kw">this</span>).secret === s; }
+}
+<span class="cm">// secret inaccessible from outside</span>
+
+<span class="cm">// Cache without memory leaks</span>
+<span class="kw">const</span> <span class="const">cache</span> = <span class="kw">new</span> <span class="fn">WeakMap</span>();
+<span class="kw">function</span> <span class="fn">process</span>(obj) {
+  <span class="kw">if</span> (cache.<span class="fn">has</span>(obj)) <span class="kw">return</span> cache.<span class="fn">get</span>(obj);
+  <span class="kw">const</span> <span class="const">result</span> = <span class="cm">/* expensive computation */</span>;
+  cache.<span class="fn">set</span>(obj, result);
+  <span class="kw">return</span> result;
+  <span class="cm">// obj GC'd → entry auto-removed. No leak!</span>
+}</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="adv4">
+      <div class="qa-question" onclick="toggleCard('adv4')"><span class="qa-num">04</span><span class="qa-q-text">Implement debounce and throttle from scratch.</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p><strong>Debounce</strong>: Execute only after a quiet period (search inputs). <strong>Throttle</strong>: Execute at most once per interval (scroll/resize).</p>
+        <pre><span class="kw">function</span> <span class="fn">debounce</span>(fn, delay) {
+  <span class="kw">let</span> <span class="const">timer</span>;
+  <span class="kw">return function</span>(...args) {
+    <span class="fn">clearTimeout</span>(timer);
+    timer = <span class="fn">setTimeout</span>(() => fn.<span class="fn">apply</span>(<span class="kw">this</span>, args), delay);
+  };
+}
+
+<span class="kw">function</span> <span class="fn">throttle</span>(fn, limit) {
+  <span class="kw">let</span> <span class="const">inThrottle</span> = <span class="kw">false</span>;
+  <span class="kw">return function</span>(...args) {
+    <span class="kw">if</span> (!inThrottle) {
+      fn.<span class="fn">apply</span>(<span class="kw">this</span>, args);
+      inThrottle = <span class="kw">true</span>;
+      <span class="fn">setTimeout</span>(() => inThrottle = <span class="kw">false</span>, limit);
+    }
+  };
+}
+
+<span class="kw">const</span> <span class="fn">search</span> = <span class="fn">debounce</span>(<span class="fn">fetchResults</span>, <span class="num">300</span>);
+<span class="kw">const</span> <span class="fn">onScroll</span> = <span class="fn">throttle</span>(<span class="fn">updateUI</span>, <span class="num">100</span>);</pre>
+      </div></div>
+    </div>
+
+    <div class="qa-card" id="adv5">
+      <div class="qa-question" onclick="toggleCard('adv5')"><span class="qa-num">05</span><span class="qa-q-text">What causes memory leaks in JavaScript? How do you detect and prevent them?</span><span class="qa-toggle">+</span></div>
+      <div class="qa-answer"><div class="qa-answer-inner">
+        <span class="tag tag-hard">Hard</span>
+        <p>Common causes: forgotten event listeners, closures holding large data, detached DOM nodes, intervals not cleared, global variables accumulating state.</p>
+        <pre><span class="cm">// LEAK: event listener never removed</span>
+<span class="kw">function</span> <span class="fn">init</span>() {
+  <span class="kw">const</span> <span class="const">data</span> = <span class="kw">new</span> <span class="fn">Array</span>(<span class="num">1000000</span>).<span class="fn">fill</span>(<span class="str">'x'</span>);
+  document.<span class="fn">addEventListener</span>(<span class="str">'click'</span>, () => {
+    <span class="fn">use</span>(data); <span class="cm">// data never freed!</span>
+  });
+}
+
+<span class="cm">// FIX: AbortController</span>
+<span class="kw">const</span> <span class="const">ctrl</span> = <span class="kw">new</span> <span class="fn">AbortController</span>();
+document.<span class="fn">addEventListener</span>(<span class="str">'click'</span>, handler, { signal: ctrl.signal });
+ctrl.<span class="fn">abort</span>(); <span class="cm">// removes listener</span>
+
+<span class="cm">// LEAK: interval not cleared</span>
+<span class="kw">const</span> <span class="const">id</span> = <span class="fn">setInterval</span>(poll, <span class="num">1000</span>);
+<span class="cm">// FIX:</span>
+<span class="fn">clearInterval</span>(id); <span class="cm">// on cleanup</span>
+
+<span class="cm">// Detect: Chrome DevTools → Memory tab → heap snapshot</span></pre>
+      </div></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="quiz" class="section">
+  <div class="section-header">
+    <div class="section-label">// practice mode</div>
+    <div class="section-title">Quiz: Predict the Output</div>
+    <div class="section-desc">Real interview questions. Select the correct output — then see the explanation.</div>
+  </div>
+  <div class="quiz-score">🎯 Score: <span id="quiz-score-val">0</span> / 5</div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">What does this code output?<pre style="margin-top:12px"><span class="kw">var</span> x = <span class="num">1</span>;
+<span class="kw">function</span> <span class="fn">test</span>() {
+  <span class="fn">console</span>.<span class="fn">log</span>(x);
+  <span class="kw">var</span> x = <span class="num">2</span>;
+  <span class="fn">console</span>.<span class="fn">log</span>(x);
+}
+<span class="fn">test</span>();</pre></div>
+    <div class="quiz-options" id="q1-opts">
+      <div class="quiz-opt" onclick="answer(this,'q1','a')">1, 2</div>
+      <div class="quiz-opt" onclick="answer(this,'q1','b')">undefined, 2</div>
+      <div class="quiz-opt" onclick="answer(this,'q1','c')">1, 1</div>
+      <div class="quiz-opt" onclick="answer(this,'q1','d')">ReferenceError</div>
+    </div>
+    <div class="quiz-explain" id="q1-explain"><strong>Answer: undefined, 2.</strong> var x inside the function is hoisted to function scope, initialized as undefined. The outer x is shadowed. This is exactly why let/const are preferred.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">What is logged?<pre style="margin-top:12px"><span class="kw">const</span> obj = { a: <span class="num">1</span>, b: { c: <span class="num">2</span> } };
+<span class="kw">const</span> copy = { ...obj };
+copy.a = <span class="num">99</span>;
+copy.b.c = <span class="num">99</span>;
+<span class="fn">console</span>.<span class="fn">log</span>(obj.a, obj.b.c);</pre></div>
+    <div class="quiz-options" id="q2-opts">
+      <div class="quiz-opt" onclick="answer(this,'q2','a')">99, 99</div>
+      <div class="quiz-opt" onclick="answer(this,'q2','b')">1, 99</div>
+      <div class="quiz-opt" onclick="answer(this,'q2','c')">1, 2</div>
+      <div class="quiz-opt" onclick="answer(this,'q2','d')">99, 2</div>
+    </div>
+    <div class="quiz-explain" id="q2-explain"><strong>Answer: 1, 99.</strong> Spread creates a shallow copy. Primitive obj.a is copied by value (unchanged). But obj.b is copied by reference — mutating copy.b.c also mutates the original obj.b.c.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">What does this print?<pre style="margin-top:12px"><span class="kw">async function</span> <span class="fn">main</span>() {
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'A'</span>);
+  <span class="kw">await</span> <span class="kw">Promise</span>.<span class="fn">resolve</span>();
+  <span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'B'</span>);
+}
+<span class="fn">main</span>();
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="str">'C'</span>);</pre></div>
+    <div class="quiz-options" id="q3-opts">
+      <div class="quiz-opt" onclick="answer(this,'q3','a')">A, B, C</div>
+      <div class="quiz-opt" onclick="answer(this,'q3','b')">A, C, B</div>
+      <div class="quiz-opt" onclick="answer(this,'q3','c')">C, A, B</div>
+      <div class="quiz-opt" onclick="answer(this,'q3','d')">A, C (B never runs)</div>
+    </div>
+    <div class="quiz-explain" id="q3-explain"><strong>Answer: A, C, B.</strong> main() starts synchronously, prints A. await suspends main and returns control. C prints. Then the microtask queue runs and B prints.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">What is the output?<pre style="margin-top:12px"><span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">typeof</span> <span class="kw">null</span>);
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="kw">null instanceof</span> <span class="kw">Object</span>);</pre></div>
+    <div class="quiz-options" id="q4-opts">
+      <div class="quiz-opt" onclick="answer(this,'q4','a')">"null", true</div>
+      <div class="quiz-opt" onclick="answer(this,'q4','b')">"object", true</div>
+      <div class="quiz-opt" onclick="answer(this,'q4','c')">"object", false</div>
+      <div class="quiz-opt" onclick="answer(this,'q4','d')">"null", false</div>
+    </div>
+    <div class="quiz-explain" id="q4-explain"><strong>Answer: "object", false.</strong> typeof null === 'object' is a historical V8 bug. But null instanceof Object is false because instanceof checks the prototype chain, and null has none.</div>
+  </div>
+
+  <div class="quiz-card">
+    <div class="quiz-q">What is logged?<pre style="margin-top:12px"><span class="kw">function</span> <span class="fn">foo</span>() {
+  <span class="kw">return</span> { bar: <span class="str">'hello'</span> };
+}
+<span class="kw">function</span> <span class="fn">baz</span>() {
+  <span class="kw">return</span>
+  { bar: <span class="str">'hello'</span> };
+}
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="fn">foo</span>());
+<span class="fn">console</span>.<span class="fn">log</span>(<span class="fn">baz</span>());</pre></div>
+    <div class="quiz-options" id="q5-opts">
+      <div class="quiz-opt" onclick="answer(this,'q5','a')">{bar:'hello'}, {bar:'hello'}</div>
+      <div class="quiz-opt" onclick="answer(this,'q5','b')">{bar:'hello'}, undefined</div>
+      <div class="quiz-opt" onclick="answer(this,'q5','c')">SyntaxError in baz</div>
+      <div class="quiz-opt" onclick="answer(this,'q5','d')">{bar:'hello'}, null</div>
+    </div>
+    <div class="quiz-explain" id="q5-explain"><strong>Answer: {bar:'hello'}, undefined.</strong> ASI (Automatic Semicolon Insertion) inserts a semicolon after return in baz because there's a newline. The object literal becomes dead code. Always put { on the same line as return!</div>
+  </div>
+</div>
+
+<!-- CHEATSHEET -->
+<div id="cheatsheet" class="section">
+  <div class="section-header">
+    <div class="section-label">// quick reference</div>
+    <div class="section-title">Cheat Sheet</div>
+    <div class="section-desc">Key patterns and gotchas to review right before your interview.</div>
+  </div>
+  <div class="cheat-grid">
+    <div class="cheat-card">
+      <div class="cheat-title">Type Checks</div>
+      <pre style="font-size:12px"><span class="kw">typeof</span> <span class="str">"hi"</span>        <span class="cm">// "string"</span>
+<span class="kw">typeof</span> <span class="num">42</span>         <span class="cm">// "number"</span>
+<span class="kw">typeof</span> <span class="kw">true</span>       <span class="cm">// "boolean"</span>
+<span class="kw">typeof</span> <span class="kw">undefined</span>  <span class="cm">// "undefined"</span>
+<span class="kw">typeof</span> <span class="kw">null</span>       <span class="cm">// "object" ← BUG</span>
+<span class="kw">typeof</span> {}         <span class="cm">// "object"</span>
+<span class="kw">typeof</span> []         <span class="cm">// "object"</span>
+<span class="kw">typeof</span> fn         <span class="cm">// "function"</span>
+<span class="kw">Array</span>.<span class="fn">isArray</span>([]) <span class="cm">// true ← use this</span>
+x === <span class="kw">null</span>        <span class="cm">// null check</span></pre>
+    </div>
+    <div class="cheat-card">
+      <div class="cheat-title">Equality Traps</div>
+      <pre style="font-size:12px"><span class="num">0</span> == <span class="kw">false</span>          <span class="cm">// true</span>
+<span class="str">""</span> == <span class="kw">false</span>         <span class="cm">// true</span>
+<span class="kw">null</span> == <span class="kw">undefined</span>   <span class="cm">// true</span>
+<span class="kw">null</span> == <span class="num">0</span>           <span class="cm">// false!</span>
+<span class="kw">NaN</span> == <span class="kw">NaN</span>          <span class="cm">// false!</span>
+<span class="kw">Number</span>.<span class="fn">isNaN</span>(<span class="kw">NaN</span>)   <span class="cm">// true</span>
+[] == ![]            <span class="cm">// true (!)</span>
+[] == <span class="str">""</span>            <span class="cm">// true</span></pre>
+    </div>
+    <div class="cheat-card">
+      <div class="cheat-title">Event Loop Order</div>
+      <pre style="font-size:12px"><span class="cm">// Execution order:
+// 1. Synchronous code
+// 2. Microtasks (drain all):
+//    - Promise.then/catch/finally
+//    - queueMicrotask()
+//    - MutationObserver
+// 3. Macrotasks (one at a time):
+//    - setTimeout/setInterval
+//    - I/O callbacks
+//    - UI rendering
+//    - setImmediate (Node)</span></pre>
+    </div>
+    <div class="cheat-card">
+      <div class="cheat-title">this Context Rules</div>
+      <pre style="font-size:12px"><span class="cm">// Regular fn (dynamic binding)</span>
+obj.<span class="fn">method</span>()    <span class="cm">// this = obj</span>
+<span class="fn">fn</span>()            <span class="cm">// this = undefined (strict)</span>
+<span class="kw">new</span> <span class="fn">Fn</span>()        <span class="cm">// this = new instance</span>
+fn.<span class="fn">call</span>(ctx)    <span class="cm">// this = ctx</span>
+
+<span class="cm">// Arrow fn (lexical — never changes)
+// Cannot: call/apply/bind override
+// Cannot: use as constructor
+// No: own 'arguments' object</span></pre>
+    </div>
+    <div class="cheat-card">
+      <div class="cheat-title">Scope &amp; Hoisting</div>
+      <pre style="font-size:12px"><span class="cm">// var: function scope, undefined on hoist
+// let/const: block scope, TDZ on hoist
+// const: binding const, value mutable</span>
+<span class="kw">const</span> arr = [];
+arr.<span class="fn">push</span>(<span class="num">1</span>);   <span class="cm">// OK</span>
+arr = [];      <span class="cm">// TypeError</span>
+
+<span class="cm">// fn declarations: fully hoisted
+// fn expressions: NOT hoisted
+// Scope chain: inner→outer→global</span></pre>
+    </div>
+    <div class="cheat-card">
+      <div class="cheat-title">Prototype Quick Ref</div>
+      <pre style="font-size:12px"><span class="kw">Object</span>.<span class="fn">create</span>(proto)       <span class="cm">// set proto</span>
+<span class="kw">Object</span>.<span class="fn">getPrototypeOf</span>(obj) <span class="cm">// get proto</span>
+<span class="kw">Object</span>.<span class="fn">hasOwn</span>(obj, <span class="str">'key'</span>) <span class="cm">// ES2022</span>
+obj.<span class="fn">hasOwnProperty</span>(<span class="str">'k'</span>)  <span class="cm">// legacy</span>
+[] <span class="kw">instanceof</span> Array        <span class="cm">// true</span>
+[] <span class="kw">instanceof</span> Object       <span class="cm">// true!</span>
+<span class="kw">Object</span>.<span class="fn">keys</span>(obj)           <span class="cm">// own enumerable</span>
+<span class="kw">for</span>...<span class="kw">in</span>                  <span class="cm">// inherited too</span></pre>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const quizAnswers = { q1:'b', q2:'b', q3:'b', q4:'c', q5:'b' };
+let score = 0, answered = {};
+
+function showSection(id, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+function toggleCard(id) {
+  const card = document.getElementById(id);
+  const isOpen = card.classList.contains('open');
+  card.classList.toggle('open');
+  card.querySelector('.qa-toggle').textContent = isOpen ? '+' : '−';
+}
+
+function filterCards(input, listId) {
+  const q = input.value.toLowerCase();
+  document.querySelectorAll(`#${listId} .qa-card`).forEach(card => {
+    card.style.display = card.querySelector('.qa-q-text').textContent.toLowerCase().includes(q) ? '' : 'none';
+  });
+}
+
+function answer(el, qId, choice) {
+  if (answered[qId]) return;
+  answered[qId] = true;
+  const opts = document.querySelectorAll(`#${qId}-opts .quiz-opt`);
+  opts.forEach(o => o.classList.add('disabled'));
+  const correct = quizAnswers[qId];
+  ['a','b','c','d'].forEach((l, i) => {
+    if (l === correct) opts[i].classList.add('correct');
+    else if (l === choice) opts[i].classList.add('wrong');
+  });
+  if (choice === correct) score++;
+  document.getElementById('quiz-score-val').textContent = score;
+  document.getElementById('score-display').textContent = score;
+  document.getElementById(`${qId}-explain`).classList.add('show');
+}
+
+document.getElementById('tip1').classList.add('open');
+</script>
+</body>
+</html>
